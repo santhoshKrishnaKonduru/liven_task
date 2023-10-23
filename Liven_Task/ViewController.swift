@@ -66,7 +66,7 @@ class ViewController: UIViewController {
         if group.name == "Group 2" {
             totalBill -= totalBill * group.discount
         }
-        let taxes = totalBill * 0.10
+        let taxes = totalBill * 0.10 // assuming 10% tax on total bill
         if group.isCreditCardPayment {
             totalBill += totalBill * 0.012
         }
