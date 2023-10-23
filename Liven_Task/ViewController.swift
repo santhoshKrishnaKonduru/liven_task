@@ -73,11 +73,11 @@ class ViewController: UIViewController {
     
     func displayInvoice(for group: Group) {
         let (totalBill, taxes) = calculateBill(for: group)
-        print("Group name: \(group.name)")
+        print("\n\(group.name) menu items\n")
         for item in group.items {
             print("\(item.name) $\(item.price) x \(item.quantity)")
         }
-        print("Total: $\((totalBill + taxes).rounded(toPlaces: 2))")
+        print("\nTotal: $\((totalBill + taxes).rounded(toPlaces: 2))")
         print("Taxes: $\(taxes.rounded(toPlaces: 2))")
         print("Discount: $\((totalBill * group.discount).rounded(toPlaces: 2))")
         
