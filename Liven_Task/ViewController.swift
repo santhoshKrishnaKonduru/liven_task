@@ -77,25 +77,30 @@ class ViewController: UIViewController {
         for item in group.items {
             print("\(item.name) $\(item.price) x \(item.quantity)")
         }
-        print("Total: $\(totalBill + taxes)")
-        print("Taxes: $\(taxes)")
-        print("Discount: $\(totalBill * group.discount)")
+        print("Total: $\((totalBill + taxes).rounded(toPlaces: 2))")
+        print("Taxes: $\(taxes.rounded(toPlaces: 2))")
+        print("Discount: $\((totalBill * group.discount).rounded(toPlaces: 2))")
         
         if group.isCreditCardPayment {
-            print("Credit Card Surcharge: $\(totalBill * 0.012)")
+            print("Credit Card Surcharge: $\((totalBill * 0.012).rounded(toPlaces: 2))")
         }
         
         print("\nPayment details:")
         if group.items.count > 1 {
-            print("Paid $\(totalBill), returned $0, remaining $0")
+            print("Paid $\(totalBill.rounded(toPlaces: 2)), returned $0, remaining $0")
         } else {
-            print("Paid $0, returned $0, remaining $\(totalBill + taxes)")
+            print("Paid $0, returned $0, remaining $\((totalBill + taxes).rounded(toPlaces: 2))")
         }
     }
     
-    
-    
-
 
 }
 
+
+extension Double {
+    /// Rounds the double to decimal places value
+    func rounded(toPlaces places:Int) -> Double {
+        let divisor = pow(10.0, Double(places))
+        return (self * divisor).rounded() / divisor
+    }
+}
