@@ -10,12 +10,13 @@ import UIKit
 class ViewController: UIViewController {
     
     let group1Items = [
-        Item(name: "Big Brekkie", price: 16, quantity: 2),
-        Item(name: "Bruchetta", price: 8, quantity: 1),
-        Item(name: "Poached Eggs", price: 12, quantity: 1),
-        Item(name: "Coffee", price: 5, quantity: 1),
-        Item(name: "Tea", price: 3, quantity: 1),
-        Item(name: "Soda", price: 4, quantity: 1)
+        Item(name: "Big Brekkie  #1", price: 16, quantity: 1),
+        Item(name: "Big Brekkie  #2", price: 16, quantity: 1),
+        Item(name: "Bruchetta  #3", price: 8, quantity: 1),
+        Item(name: "Poached Eggs  #3", price: 12, quantity: 1),
+        Item(name: "Coffee  #2", price: 5, quantity: 1),
+        Item(name: "Tea  #1", price: 3, quantity: 1),
+        Item(name: "Soda  #3", price: 4, quantity: 1)
     ]
     
     let group2Items = [
@@ -45,22 +46,26 @@ class ViewController: UIViewController {
         let group2Discount = 0.10 // 10% discount on credit card
         let group2 = Group(name: "Group 2", items: group2Items, discount: group2Discount, isCreditCardPayment: true)
         let group3Discount = 25.0 // $25 discount from restaurant
-        let group3 = Group(name: "Group 3", items: group3Items, discount: 25.0, isCreditCardPayment: false)
+        let group3 = Group(name: "Group 3", items: group3Items, discount: group3Discount, isCreditCardPayment: false)
+        
         // Scripting the transactions
         print("Scripting the transactions:")
         let groups = [group1, group2, group3]
+        
         for group in groups {
             print("\n\nProcessing \(group.name) transaction:")
-            if group.name == "Group 3" {
-                splitPayment(for: group)
+            if group.name == "Group 1" {
+                displayGroup1Invoice(group: group)
+            }else if group.name == "Group 3" {
+                displayGroup3Invoice(for: group)
             } else {
-                displayInvoice(for: group)
+                displayGroup2Invoice(for: group)
             }
         }
 
-
     }
     
+   
     func calculateBill(for group: Group) -> (Double, Double) {
         var totalBill = group.items.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
         if group.name == "Group 2" {
@@ -72,9 +77,63 @@ class ViewController: UIViewController {
         }
         return (totalBill, taxes)
     }
+}
+
+
+// MARK: Group 1 Calculations
+extension ViewController {
+    
+    func generateGroup1Bills(for group: Group) -> (Double, [Double]) {
+        var totalAmount = 0.0
+        var individualBills: [Double] = Array(repeating: 0.0, count: 3) // Initialize individual bills for 3 members
+
+        for item in group.items {
+            let itemTotal = item.price * Double(item.quantity)
+            totalAmount += itemTotal
+            
+            // Distribute the item's cost among members who ordered it
+            for _ in 0..<min(item.quantity, 3) {
+                let memberNumber = item.name.components(separatedBy: "#").last
+                if let member = memberNumber, let memberIndex = Int(member) {
+                    individualBills[memberIndex - 1] += itemTotal / Double(min(item.quantity, 3))
+                }
+            }
+        }
+        
+        return (totalAmount, individualBills)
+    }
+
+    
+    func displayGroup1Invoice(group: Group) {
+        
+        // Generate total menu, total amount, and individual bills for Group 1
+        let (totalAmount, individualBills) = generateGroup1Bills(for: group)
+       
+        // Display total menu
+        print("Total Menu for Group 1:")
+        for item in group1Items {
+            print("\(item.name) - $\(item.price) x \(item.quantity)")
+        }
+        
+       
+        // Display individual bills
+        print("\nIndividual Bill\n")
+        for (index, bill) in individualBills.enumerated() {
+            print("Member \(index + 1) - Bill: $\(bill.rounded(toPlaces: 2))")
+        }
+        
+        print("\nTotal: $\(totalAmount.rounded(toPlaces: 2))")
+
+    }
     
     
-    func displayInvoice(for group: Group) {
+}
+
+// MARK: Group 2 Calculations
+extension ViewController {
+    
+
+    func displayGroup2Invoice(for group: Group) {
         let (totalBill, taxes) = calculateBill(for: group)
         print("\n\(group.name) menu items\n")
         for item in group.items {
@@ -95,9 +154,13 @@ class ViewController: UIViewController {
             print("Paid $0, returned $0, remaining $\((totalBill + taxes).rounded(toPlaces: 2))")
         }
     }
+
+}
+
+// MARK: Group 3 Calculations
+extension ViewController {
     
-    
-    func splitPayment(for group: Group) {
+    func displayGroup3Invoice(for group: Group) {
         let initialTab = 50.0
         let discount = group.discount
         let (totalBill, taxes) = calculateBill(for: group)
@@ -121,7 +184,6 @@ class ViewController: UIViewController {
         }
     }
 }
-
 
 extension Double {
     /// Rounds the double to decimal places value
