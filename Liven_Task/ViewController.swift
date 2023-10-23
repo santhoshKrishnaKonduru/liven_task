@@ -44,17 +44,18 @@ class ViewController: UIViewController {
         let group1 = Group(name: "Group 1", items: group1Items, discount: 0.0, isCreditCardPayment: false)
         let group2Discount = 0.10 // 10% discount on credit card
         let group2 = Group(name: "Group 2", items: group2Items, discount: group2Discount, isCreditCardPayment: true)
-        let group3Tab = group3Items.reduce(0, { $0 + $1.price * Double($1.quantity) })
-        let restaurantDiscount = 25.0
-        let group3Discount = restaurantDiscount / group3Tab
-        let group3 = Group(name: "Group 3", items: group3Items, discount: group3Discount, isCreditCardPayment: false)
-        
+        let group3Discount = 25.0 // $25 discount from restaurant
+        let group3 = Group(name: "Group 3", items: group3Items, discount: 25.0, isCreditCardPayment: false)
         // Scripting the transactions
         print("Scripting the transactions:")
         let groups = [group1, group2, group3]
         for group in groups {
             print("\n\nProcessing \(group.name) transaction:")
-            displayInvoice(for: group)
+            if group.name == "Group 3" {
+                splitPayment(for: group)
+            } else {
+                displayInvoice(for: group)
+            }
         }
 
 
@@ -62,7 +63,9 @@ class ViewController: UIViewController {
     
     func calculateBill(for group: Group) -> (Double, Double) {
         var totalBill = group.items.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
-        totalBill -= totalBill * group.discount
+        if group.name == "Group 2" {
+            totalBill -= totalBill * group.discount
+        }
         let taxes = totalBill * 0.10
         if group.isCreditCardPayment {
             totalBill += totalBill * 0.012
@@ -77,7 +80,7 @@ class ViewController: UIViewController {
         for item in group.items {
             print("\(item.name) $\(item.price) x \(item.quantity)")
         }
-        print("\nTotal: $\((totalBill + taxes).rounded(toPlaces: 2))")
+        print("\nTotal: $\(totalBill.rounded(toPlaces: 2))")
         print("Taxes: $\(taxes.rounded(toPlaces: 2))")
         print("Discount: $\((totalBill * group.discount).rounded(toPlaces: 2))")
         
@@ -93,7 +96,30 @@ class ViewController: UIViewController {
         }
     }
     
+    
+    func splitPayment(for group: Group) {
+        let initialTab = 50.0
+        let discount = group.discount
+        let (totalBill, taxes) = calculateBill(for: group)
+        let remainingBill = totalBill - discount
+        let individualPayment = remainingBill / Double(group.items.count)
+        let returnedAmount = discount / Double(group.items.count)
 
+        print("\n\(group.name) menu items\n")
+        for item in group.items {
+            print("\(item.name) $\(item.price) x \(item.quantity)")
+        }
+        print("\nTotal: $\(totalBill.rounded(toPlaces: 2))")
+        print("Taxes: $\(taxes.rounded(toPlaces: 2))")
+        print("Discount: $\(discount.rounded(toPlaces: 2))")
+        print("Initial Tab: $\(initialTab.rounded(toPlaces: 2))")
+        print("Individual Payment: $\(individualPayment.rounded(toPlaces: 2))\n")
+        print("Payment details:")
+        
+        for member in 1...group.items.count {
+            print("Group Member\(member) Paid $\(individualPayment.rounded(toPlaces: 2)), returned $\(returnedAmount.rounded(toPlaces: 2)), remaining $0")
+        }
+    }
 }
 
 
