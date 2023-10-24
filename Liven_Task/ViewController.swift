@@ -64,16 +64,21 @@ class ViewController: UIViewController {
     }
     
    
-    func calculateBill(for group: Group) -> (Double, Double) {
-        var totalBill = group.items.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
+    func calculateBill(for group: Group) -> (grandTotal: Double, billPaid: Double, taxes: Double, discount: Double) {
+        let grandTotal = group.items.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
+        var discount = group.discount
+        var billPaid = grandTotal
         if group.name == GroupMember.Group2 {
-            totalBill -= totalBill * group.discount
+            billPaid -= grandTotal * discount
+            discount = grandTotal * discount // total discount amount from grand total
+        }else if group.name == .Group3 {
+            billPaid = grandTotal - discount
         }
-        let taxes = totalBill * 0.10 // assuming 10% tax on total bill
+        let taxes = grandTotal * 0.10 // assuming 10% tax on total bill
         if group.isCreditCardPayment {
-            totalBill += totalBill * 0.012
+            billPaid += grandTotal * 0.012
         }
-        return (totalBill, taxes)
+        return (grandTotal, billPaid ,taxes, discount)
     }
 }
 
@@ -120,7 +125,7 @@ extension ViewController {
             print("Member \(index + 1) - Bill: $\(bill.rounded(toPlaces: 2))")
         }
         
-        print("\nTotal: $\(totalAmount.rounded(toPlaces: 2))")
+        print("\nTotal amount paid: $\(totalAmount.rounded(toPlaces: 2))")
 
     }
     
@@ -131,12 +136,8 @@ extension ViewController {
 extension ViewController {
 
     func displayGroupInvoice(for group: Group) {
-        let (totalBill, taxes) = calculateBill(for: group)
-        var discount = group.discount
-        if group.name == .Group2 {
-            discount = totalBill * discount
-        }
-        let remainingBill = totalBill - discount
+        let (grandTotal, billPaid, taxes, discount) = calculateBill(for: group)
+        let remainingBill = billPaid
         let individualPayment = remainingBill / Double(group.totalMembers)
         let returnedAmount = discount / Double(group.totalMembers)
         
@@ -145,20 +146,25 @@ extension ViewController {
             print("\(item.name) $\(item.price) x \(item.quantity)")
         }
         
-        print("\nTotal: $\(totalBill.rounded(toPlaces: 2))")
+        print("\nTotal: $\(grandTotal.rounded(toPlaces: 2))")
         print("Taxes: $\(taxes.rounded(toPlaces: 2))")
         print("Discount: $\(discount.rounded(toPlaces: 2))")
         if group.isCreditCardPayment {
-            print("Credit Card Surcharge: $\((totalBill * 0.012).rounded(toPlaces: 2))")
+            print("Credit Card Surcharge: $\((grandTotal * 0.012).rounded(toPlaces: 2))")
         }
         print("Individual Payment: $\(individualPayment.rounded(toPlaces: 2))\n")
                
         
         print("\nPayment details:")
+        print("Total bill paid $\(billPaid.rounded(toPlaces: 2)), returned $\(discount.rounded(toPlaces: 2)), remaining $0\n")
         
-        for member in 1...group.totalMembers {
-            print("Group Member\(member) Paid $\(individualPayment.rounded(toPlaces: 2)), returned $\(returnedAmount.rounded(toPlaces: 2)), remaining $0")
+        if group.name == .Group3 {
+            for member in 1...group.totalMembers {
+                print("Group Member\(member) Paid $\(individualPayment.rounded(toPlaces: 2)), returned $\(returnedAmount.rounded(toPlaces: 2)), remaining $0")
+            }
         }
+          
+       
     }
 
 }
